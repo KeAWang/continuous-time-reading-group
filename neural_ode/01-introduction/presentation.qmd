@@ -1,0 +1,900 @@
+---
+title: "Introduction to Neural ODEs"
+subtitle: "Continuous time models reading group"
+date: "2022-10-07"
+author: "Ke Alexander Wang"
+format:
+    #html
+    revealjs:
+        code-fold: true
+execute:
+    echo: true
+jupyter: python3
+---
+
+::: {.hidden}
+$$
+% Made for MathJax
+
+
+%mathbf letters for matrices/vectors
+\renewcommand{\vec}[1]{\mathbf{#1}}
+\newcommand{\avec}{\vec{a}}
+\newcommand{\bvec}{\vec{b}}
+\newcommand{\cvec}{\vec{c}}
+\newcommand{\dvec}{\vec{d}}
+\newcommand{\evec}{\vec{e}}
+\newcommand{\fvec}{\vec{f}}
+\newcommand{\gvec}{\vec{g}}
+\newcommand{\hvec}{\vec{h}}
+\newcommand{\ivec}{\vec{i}}
+\newcommand{\jvec}{\vec{j}}
+\newcommand{\kvec}{\vec{k}}
+\newcommand{\lvec}{\vec{l}}
+\newcommand{\mvec}{\vec{m}}
+\newcommand{\nvec}{\vec{n}}
+\newcommand{\ovec}{\vec{o}}
+\newcommand{\pvec}{\vec{p}}
+\newcommand{\qvec}{\vec{q}}
+\newcommand{\rvec}{\vec{r}}
+\newcommand{\svec}{\vec{s}}
+\newcommand{\tvec}{\vec{t}}
+\newcommand{\uvec}{\vec{u}}
+\newcommand{\vvec}{\vec{v}}
+\newcommand{\wvec}{\vec{w}}
+\newcommand{\xvec}{\vec{x}}
+\newcommand{\yvec}{\vec{y}}
+\newcommand{\zvec}{\vec{z}}
+
+\newcommand{\abf}{\mathbf{a}}
+\newcommand{\bbbf}{\mathbf{b}}
+\newcommand{\cbf}{\mathbf{c}}
+\newcommand{\dbf}{\mathbf{d}}
+\newcommand{\ebf}{\mathbf{e}}
+\newcommand{\fbf}{\mathbf{f}}
+\newcommand{\gbf}{\mathbf{g}}
+\newcommand{\hbf}{\mathbf{h}}
+\newcommand{\ibf}{\mathbf{i}}
+\newcommand{\jbf}{\mathbf{j}}
+\newcommand{\kbf}{\mathbf{k}}
+\newcommand{\lbf}{\mathbf{l}}
+\newcommand{\mbf}{\mathbf{m}}
+\newcommand{\nbf}{\mathbf{n}}
+\newcommand{\obf}{\mathbf{o}}
+\newcommand{\pbf}{\mathbf{p}}
+\newcommand{\qbf}{\mathbf{q}}
+\newcommand{\rbf}{\mathbf{r}}
+\newcommand{\sbf}{\mathbf{s}}
+\newcommand{\tbf}{\mathbf{t}}
+\newcommand{\ubf}{\mathbf{u}}
+\newcommand{\vbf}{\mathbf{v}}
+\newcommand{\wbf}{\mathbf{w}}
+\newcommand{\xbf}{\mathbf{x}}
+\newcommand{\ybf}{\mathbf{y}}
+\newcommand{\zbf}{\mathbf{z}}
+
+\newcommand{\Abf}{\mathbf{A}}
+\newcommand{\Bbf}{\mathbf{B}}
+\newcommand{\Cbf}{\mathbf{C}}
+\newcommand{\Dbf}{\mathbf{D}}
+\newcommand{\Ebf}{\mathbf{E}}
+\newcommand{\Fbf}{\mathbf{F}}
+\newcommand{\Gbf}{\mathbf{G}}
+\newcommand{\Hbf}{\mathbf{H}}
+\newcommand{\Ibf}{\mathbf{I}}
+\newcommand{\Jbf}{\mathbf{J}}
+\newcommand{\Kbf}{\mathbf{K}}
+\newcommand{\Lbf}{\mathbf{L}}
+\newcommand{\Mbf}{\mathbf{M}}
+\newcommand{\Nbf}{\mathbf{N}}
+\newcommand{\Obf}{\mathbf{O}}
+\newcommand{\Pbf}{\mathbf{P}}
+\newcommand{\Qbf}{\mathbf{Q}}
+\newcommand{\Rbf}{\mathbf{R}}
+\newcommand{\Sbf}{\mathbf{S}}
+\newcommand{\Tbf}{\mathbf{T}}
+\newcommand{\Ubf}{\mathbf{U}}
+\newcommand{\Vbf}{\mathbf{V}}
+\newcommand{\Wbf}{\mathbf{W}}
+\newcommand{\Xbf}{\mathbf{X}}
+\newcommand{\Ybf}{\mathbf{Y}}
+\newcommand{\Zbf}{\mathbf{Z}}
+
+% mathsf letters
+\newcommand{\asf}{\mathsf{a}}
+\newcommand{\bsf}{\mathsf{b}}
+\newcommand{\csf}{\mathsf{c}}
+\newcommand{\dsf}{\mathsf{d}}
+\newcommand{\esf}{\mathsf{e}}
+\newcommand{\fsf}{\mathsf{f}}
+\newcommand{\gsf}{\mathsf{g}}
+\newcommand{\hsf}{\mathsf{h}}
+\newcommand{\isf}{\mathsf{i}}
+\newcommand{\jsf}{\mathsf{j}}
+\newcommand{\ksf}{\mathsf{k}}
+\newcommand{\lsf}{\mathsf{l}}
+\newcommand{\msf}{\mathsf{m}}
+\newcommand{\nsf}{\mathsf{n}}
+\newcommand{\osf}{\mathsf{o}}
+\newcommand{\psf}{\mathsf{p}}
+\newcommand{\qsf}{\mathsf{q}}
+\newcommand{\rsf}{\mathsf{r}}
+\newcommand{\ssf}{\mathsf{s}}
+\newcommand{\tsf}{\mathsf{t}}
+\newcommand{\usf}{\mathsf{u}}
+\newcommand{\vsf}{\mathsf{v}}
+\newcommand{\wsf}{\mathsf{w}}
+\newcommand{\xsf}{\mathsf{x}}
+\newcommand{\ysf}{\mathsf{y}}
+\newcommand{\zsf}{\mathsf{z}}
+
+\newcommand{\Asf}{\mathsf{A}}
+\newcommand{\Bsf}{\mathsf{B}}
+\newcommand{\Csf}{\mathsf{C}}
+\newcommand{\Dsf}{\mathsf{D}}
+\newcommand{\Esf}{\mathsf{E}}
+\newcommand{\Fsf}{\mathsf{F}}
+\newcommand{\Gsf}{\mathsf{G}}
+\newcommand{\Hsf}{\mathsf{H}}
+\newcommand{\Isf}{\mathsf{I}}
+\newcommand{\Jsf}{\mathsf{J}}
+\newcommand{\Ksf}{\mathsf{K}}
+\newcommand{\Lsf}{\mathsf{L}}
+\newcommand{\Msf}{\mathsf{M}}
+\newcommand{\Nsf}{\mathsf{N}}
+\newcommand{\Osf}{\mathsf{O}}
+\newcommand{\Psf}{\mathsf{P}}
+\newcommand{\Qsf}{\mathsf{Q}}
+\newcommand{\Rsf}{\mathsf{R}}
+\newcommand{\Ssf}{\mathsf{S}}
+\newcommand{\Tsf}{\mathsf{T}}
+\newcommand{\Usf}{\mathsf{U}}
+\newcommand{\Vsf}{\mathsf{V}}
+\newcommand{\Wsf}{\mathsf{W}}
+\newcommand{\Xsf}{\mathsf{X}}
+\newcommand{\Ysf}{\mathsf{Y}}
+\newcommand{\Zsf}{\mathsf{Z}}
+
+% mathbb letters
+\newcommand{\Abb}{\mathbb{A}}
+\newcommand{\Cbb}{\mathbb{C}}
+\newcommand{\Dbb}{\mathbb{D}}
+\newcommand{\Ebb}{\mathbb{E}}
+\newcommand{\Fbb}{\mathbb{F}}
+\newcommand{\Gbb}{\mathbb{G}}
+\newcommand{\Hbb}{\mathbb{H}}
+\newcommand{\Ibb}{\mathbb{I}}
+\newcommand{\Jbb}{\mathbb{J}}
+\newcommand{\Kbb}{\mathbb{K}}
+\newcommand{\Lbb}{\mathbb{L}}
+\newcommand{\Mbb}{\mathbb{M}}
+\newcommand{\Nbb}{\mathbb{N}}
+\newcommand{\Obb}{\mathbb{O}}
+\newcommand{\Pbb}{\mathbb{P}}
+\newcommand{\Qbb}{\mathbb{Q}}
+\newcommand{\Rbb}{\mathbb{R}}
+\newcommand{\Sbb}{\mathbb{S}}
+\newcommand{\Tbb}{\mathbb{T}}
+\newcommand{\Ubb}{\mathbb{U}}
+\newcommand{\Vbb}{\mathbb{V}}
+\newcommand{\Wbb}{\mathbb{W}}
+\newcommand{\Xbb}{\mathbb{X}}
+\newcommand{\Ybb}{\mathbb{Y}}
+\newcommand{\Zbb}{\mathbb{Z}}
+
+% mathcal letters
+\newcommand{\Acal}{\mathcal{A}}
+\newcommand{\Bcal}{\mathcal{B}}
+\newcommand{\Ccal}{\mathcal{C}}
+\newcommand{\Dcal}{\mathcal{D}}
+\newcommand{\Ecal}{\mathcal{E}}
+\newcommand{\Fcal}{\mathcal{F}}
+\newcommand{\Gcal}{\mathcal{G}}
+\newcommand{\Hcal}{\mathcal{H}}
+\newcommand{\Ical}{\mathcal{I}}
+\newcommand{\Jcal}{\mathcal{J}}
+\newcommand{\Kcal}{\mathcal{K}}
+\newcommand{\Lcal}{\mathcal{L}}
+\newcommand{\Mcal}{\mathcal{M}}
+\newcommand{\Ncal}{\mathcal{N}}
+\newcommand{\Ocal}{\mathcal{O}}
+\newcommand{\Pcal}{\mathcal{P}}
+\newcommand{\Qcal}{\mathcal{Q}}
+\newcommand{\Rcal}{\mathcal{R}}
+\newcommand{\Scal}{\mathcal{S}}
+\newcommand{\Tcal}{\mathcal{T}}
+\newcommand{\Ucal}{\mathcal{U}}
+\newcommand{\Vcal}{\mathcal{V}}
+\newcommand{\Wcal}{\mathcal{W}}
+\newcommand{\Xcal}{\mathcal{X}}
+\newcommand{\Ycal}{\mathcal{Y}}
+\newcommand{\Zcal}{\mathcal{Z}}
+
+% shorthands
+\newcommand{\constant}{\textnormal{constant}}
+% topology
+\newcommand{\scomp}[1]{#1^{\mathsf c}} % set complement
+\newcommand{\closure}[1]{\overline{#1}}
+
+\newcommand{\conv}{*}
+\newcommand{\circconv}{\circledast}
+\DeclareMathOperator{\affinehull}{aff}
+\DeclareMathOperator{\convexhull}{conv}
+\DeclareMathOperator{\conichull}{conic}
+\newcommand{\pdiv}[3][]{\operatorname{D}_{#1}\left(#2\:\vert\vert\:#3 \right)}
+\newcommand{\kldiv}[2]{\pdiv[\text{KL}]{#1}{#2}}
+\newcommand{\bigo}[1]{\mathcal{O}\left( #1 \right)}
+\newcommand{\littleo}[1]{o\left(#1 \right)}
+\newcommand{\LHS}{\operatorname{LHS}}
+\newcommand{\RHS}{\operatorname{RHS}}
+\newcommand{\reals}{\mathbb{R}}
+\newcommand{\posreals}{\reals^+}
+\newcommand{\nonnegreals}{\reals^{\geq 0}}
+\newcommand{\naturals}{\mathbb{N}}
+\newcommand{\integers}{\mathbb{Z}}
+\newcommand{\complex}{\mathbb{C}}
+
+% operators
+\newcommand{\textif}{\text{if}\ }
+\newcommand{\textelse}{\text{else}\ }
+%\DeclareMathOperator* is used for defining operators that have limits typeset beneath them instead of to the right (at least when in a display)
+\DeclareMathOperator*{\maximizeop}{maximize}
+\DeclareMathOperator*{\minimizeop}{minimize}
+\newcommand{\minimize}[1]{\minimizeop\limits_{#1}\ }
+\newcommand{\maximize}[1]{\maximizeop\limits_{#1}\ }
+\newcommand{\subjectto}{\text{subject to}\ }
+\DeclareMathOperator*{\argmax}{\arg\!\max}
+\DeclareMathOperator*{\argmin}{\arg\!\min}
+\DeclareMathOperator*{\argsup}{\arg\!\sup}
+\DeclareMathOperator*{\arginf}{\arg\!\inf}
+% use \command* to get autoscaling with paired delimiter commands
+% the unstarred version takes an optional argument that can be \big, \Big, etc
+% WARNING: Mathjax has a bug where there is an extra s in DeclarePairedDelimiter
+% See: https://github.com/mathjax/MathJax/issues/2758
+\DeclarePairedDelimiters{\ceil}{\lceil}{\rceil} % requires mathtools package
+\DeclarePairedDelimiters{\floor}{\lfloor}{\rfloor} % requires mathtools package
+\DeclarePairedDelimitersX{\inner}[2]{\langle}{\rangle}{#1, #2} % requires mathtools package
+\DeclarePairedDelimiters{\abs}{\lvert}{\rvert}%
+\DeclarePairedDelimiters{\norm}{\lVert}{\rVert}%
+\DeclarePairedDelimiters{\parens}{(}{)}
+\DeclarePairedDelimiters{\braks}{[}{]}
+\newcommand{\image}[1]{\operatorname{img}\parens*{#1}}
+\newcommand{\kernel}[1]{\operatorname{ker}\parens*{#1}}
+\newcommand{\diameter}[1]{\operatorname{diam}\parens*{#1}}
+\newcommand{\radius}[1]{\operatorname{radius}\parens*{#1}}
+\newcommand{\vecmat}[1]{\operatorname{vec}\parens*{#1}}
+\newcommand{\diag}[1]{\operatorname{diag}\parens*{#1}}
+\newcommand{\trace}[1]{\operatorname{tr}\parens*{#1}}
+% note: span is a latex primitive
+\newcommand{\vspan}[1]{\operatorname{span}\parens*{#1}}
+\newcommand{\rank}[1]{\operatorname{rank}\parens*{#1}}
+\newcommand{\sign}[1]{\operatorname{sign}\parens*{#1}}
+\newcommand{\tdef}{\triangleq}
+% middle bar, for use in delimited expressions like sets
+\newcommand{\mmid}{\ \middle| \ }
+%\newcommand{\set}[2][]{
+%    \ifx\\#1\\
+%        \{ #2 \}
+%    \else
+%        \{ #1 \mid  #2 \}
+%    \fi
+%}
+\newcommand{\onevec}{\mathbf{1}}
+\newcommand{\neginfty}{{-\infty}}
+% Positive semidefinite, positive definite cones
+\newcommand{\sym}[1]{\Sbb^{#1}}
+\newcommand{\psd}[1]{\Sbb^{#1}_+}
+\newcommand{\pd}[1]{\Sbb^{#1}_{++}}
+% up/down arrows for limits
+\newcommand{\dto}{\downarrow}
+\newcommand{\uto}{\uparrow}
+\newcommand{\T}{\top}
+\newcommand{\inverse}{^{-1}}
+\newcommand{\transpose}{{}^\top}
+% unit ball
+\newcommand{\ball}{\mathbb{B}}
+% n-sphere
+\newcommand{\sphere}[1]{S^{#1 - 1}}
+
+% Manifolds
+\newcommand{\mnf}[1]{\manifold{#1}}
+%\newcommand{\manifold}[1]{\mathcal{\MakeUppercase{#1}}}
+\newcommand{\manifold}[1]{\mathcal{#1}}
+\newcommand{\Mmanifold}{\manifold{M}}
+\newcommand{\tangent}{\mathrm{T}} % Tangent space
+\newcommand{\cotangent}{\mathrm{T}^*} % Cotangent space
+\newcommand{\scalarfields}[1]{\mathfrak{F}(#1)}
+\newcommand{\vectorfields}[1]{\mathfrak{X}(#1)}
+
+% Probability
+% Random variables
+%\newcommand{\rv}[1]{\mathbf{\MakeUppercase{#1}}}
+\newcommand{\rv}[1]{\mathbf{#1}}
+\newcommand{\arv}{\rv{A}}
+\newcommand{\brv}{\rv{B}}
+\newcommand{\crv}{\rv{C}}
+\newcommand{\drv}{\rv{D}}
+\newcommand{\erv}{\rv{E}}
+\newcommand{\frv}{\rv{F}}
+\newcommand{\grv}{\rv{G}}
+\newcommand{\hrv}{\rv{H}}
+\newcommand{\irv}{\rv{I}}
+\newcommand{\jrv}{\rv{J}}
+\newcommand{\krv}{\rv{K}}
+\newcommand{\lrv}{\rv{L}}
+\newcommand{\mrv}{\rv{M}}
+\newcommand{\nrv}{\rv{N}}
+\newcommand{\orv}{\rv{O}}
+\newcommand{\prv}{\rv{P}}
+\newcommand{\qrv}{\rv{Q}}
+\newcommand{\rrv}{\rv{R}}
+\newcommand{\srv}{\rv{S}}
+\newcommand{\trv}{\rv{T}}
+\newcommand{\urv}{\rv{U}}
+\newcommand{\vrv}{\rv{V}}
+\newcommand{\wrv}{\rv{W}}
+\newcommand{\xrv}{\rv{X}}
+\newcommand{\yrv}{\rv{Y}}
+\newcommand{\zrv}{\rv{Z}}
+
+\newcommand{\xspace}{\Xcal}
+\newcommand{\yspace}{\Ycal}
+\newcommand{\zspace}{\Zcal}
+
+\newcommand\given[1][]{\:#1\vert\:}
+
+\newcommand{\simplex}{\Delta}
+\newcommand{\ev}[2][]{\mathbb{E}_{#1}\left[ #2\right]}
+\newcommand{\var}[2][]{\operatorname{Var}_{#1} \braks{#2}}
+\newcommand{\cov}[2]{\operatorname{Cov}\parens*{#1, #2}}
+\newcommand{\prob}[2][]{\mathbb{P}_{#1}\left(#2\right)}
+\newcommand{\ind}[1]{\mathbbm{1}_{\left[ #1\right]}} % requires bbm package
+
+\DeclareMathOperator{\Binom}{Binom}
+\newcommand{\Normal}[1]{\operatorname{Normal}\parens*{#1}}
+\newcommand{\Bernoulli}[1]{\operatorname{Bernoulli}\parens*{#1}}
+\newcommand{\Binomial}[1]{\operatorname{Binomial}\parens*{#1}}
+\newcommand{\stdnormal}{\Normal{0, 1}}
+\newcommand{\stdmvnormal}{\Normal(0, I)}
+
+% convergence symbols
+\newcommand{\distto}{\overset{d}{\longrightarrow}}
+\newcommand{\asto}{\overset{a.s.}{\longrightarrow}}
+\newcommand{\probto}{\overset{\Pbb}{\longrightarrow}}
+\newcommand{\lpto}[1]{\overset{L^{#1}}{\longrightarrow}}
+\newcommand{\weakto}{\overset{\mathrm{weak}}{\longrightarrow}}
+\newcommand{\normto}{\overset{\mathrm{norm}}{\longrightarrow}}
+
+% convex analysis
+\newcommand{\gph}[1]{\operatorname{gph}\parens*{#1}}
+\newcommand{\epigraph}[1]{\operatorname{epi}\parens*{#1}}
+\newcommand{\domain}[1]{\operatorname{dom}\parens*{#1}}
+\newcommand{\intr}[1]{\mathrm{int}\left( #1 \right)}
+\newcommand{\clos}[1]{\mathrm{cl}\left( #1 \right)}
+\newcommand{\relint}[1]{{#1}^{\circ}}
+
+% groups
+\newcommand{\orth}[1]{\mathsf{O}(#1)}
+\newcommand{\sorth}[1]{\mathsf{SO}(#1)}
+\newcommand{\sunit}[1]{\mathsf{SU}(#1)}
+\newcommand{\unit}[1]{\mathsf{U}(#1)}
+
+% derivatives
+\newcommand{\dd}[1][]{\mathrm{d}{#1}} % differential
+\newcommand{\diff}{\textnormal{d}}
+\newcommand{\deriv}{\textnormal{D}}
+\newcommand{\grad}{\nabla}
+\renewcommand{\dfrac}[2]{\frac{\dd #1}{\dd #2}}
+\newcommand{\pfrac}[2]{\frac{\partial #1}{\partial #2}}
+
+% matrices
+\newcommand{\pmat}[1]{\begin{pmatrix} #1 \end{pmatrix}}
+\newcommand{\bmat}[1]{\begin{bmatrix} #1 \end{bmatrix}}
+\newcommand{\Bmat}[1]{\begin{Bmatrix} #1 \end{Bmatrix}}
+$$
+:::
+
+## High-level overview of Neural ODEs:
+
+::: r-fit-text
+Neural ODEs are models that can
+
+1. learn dynamical systems specified by ODEs
+2. handle irregularly spaced time-series data
+3. be used to correct mechanistic models of dynamical systems (hybrid models)
+4. be used for generative modeling (normalizing flows)
+5. be used for latent variable models (variational autoencoders)
+:::
+
+## Review of ODEs
+::: r-fit-text
+An $n$th order ODE is one of the form:
+$$
+\begin{align*}
+\frac{\dd^n z}{\dd t^n}(t) &= f(t, z(t), \frac{\dd z}{\dd t}(t), \ldots, \frac{\dd^{n-1}z}{\dd t^{n-1}}(t))
+\end{align*}
+$$
+where $z: [0, \tau] \to \reals$.
+
+Think about $z(t)$ as the state of a system, and $t$ as time.
+:::
+
+## Every ODE can become a first-order ODE
+::: r-fit-text
+Regardless of its order, an ODE describes how a state $z$ evolves as a function of time $t$.
+
+Every $n$th order ODE can be written as a *system* of $n$ first order ODEs by augmenting $z$ with new variables $z_2, z_3, \ldots, z_{n-1}$:
+$$
+\begin{align*}
+\frac{\dd z}{\dd t} &=: z_1 \\
+\frac{\dd z_1}{\dd t} &=: z_2 \\
+&\vdots \\
+\frac{\dd z_{n-2}}{dt} &=: z_{n-1} \\
+\frac{\dd z_{n-1}}{dt}(t) &= f(t, z(t), z_1(t), z_2(t), \ldots, z_{n-1}(t))
+\end{align*}
+$$
+:::
+
+## General form of an ODE (system)
+::: r-fit-text
+In general, we have a ODE of the form:
+$$
+\begin{align*}
+\frac{\dd z}{\dd t}(t) &= f (t, z(t))
+\end{align*}
+$$
+where $z(t)$ and $f(t, z(t)) \in  \mathbb R^D$.
+
+$f$ can be thought of as our system's "velocity", 
+describing the instantaneous rate of change of our state 
+$z$.
+
+$f$ is called the "dynamics" or the "vector field" of the ODE.
+:::
+
+## Example of a $D=2$ ODE 
+
+::: r-fit-text
+Let's define an autonomous $D=2$ dynamical system where $f$ is a linear function of the state:
+
+$$
+\begin{align*}
+f(t, z) = Az :=
+\begin{bmatrix}
+-1/10 & -1/10 \\
+1/10 & -1/10
+\end{bmatrix}
+z 
+\end{align*}
+$$
+
+```{python}
+import torch
+
+torch.manual_seed(0)
+device = "cuda" if torch.cuda.is_available() else "cpu"
+
+class LinearDynamics(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+        A = torch.tensor([[-1., -1],
+                          [1., -1.]]) / 10.
+        self.register_buffer("A", A)
+
+    def forward(self, t, z):
+        assert t.ndim == 0
+        assert z.ndim == 2
+        return torch.mm(z, self.A.T)
+```
+:::
+
+## Example of a Neural ODE
+::: r-fit-text
+Example where $f$ has learnable parameters $\theta$, denoted as $f_\theta$.
+```{python}
+class NeuralDynamics(torch.nn.Module):
+    def __init__(self, input_size, num_hidden=10):
+        super().__init__()
+        self.num_hidden = num_hidden
+        self.fc1 = torch.nn.Linear(input_size, num_hidden)
+        self.fc2 = torch.nn.Linear(num_hidden, input_size)
+        self.act = torch.nn.GELU()
+
+    def forward(self, t, x):
+        x = self.fc1(x)
+        x = self.act(x)
+        x = self.fc2(x)
+        return x
+```
+:::
+
+## Initial value problems are unique
+An initial value problem consists of a differential equation and an initial condition of the function:
+$$z(0) = z_0 \quad \frac{\dd z}{\dd t}(t) = f(t, z(t)).$$
+
+:::{.callout-note}
+### Picard's Existence Theorem
+Let $f: [0, \tau] \times \reals^D \to \reals^D$ be **continuous** in $t$ and **uniformly Lipschitz** in the second argument. Let $z_0 \in \reals^D$. Then there exists a unique differentiable $z: [0, \tau] \to \reals^D$ satisfying
+$$z(0) = z_0 \quad \frac{\dd z}{\dd t}(t) = f(t, z(t)).$$
+:::
+
+## Integration as a forward pass
+::: r-fit-text
+Given $z(0) =: z_0$ and $f$, we can compute $z(t)$ at any $t$: 
+$$
+\begin{align*}
+z(t) &= z_0 + \int_{0}^t f(z, t) dt
+\end{align*}
+$$
+Not solvable analytically, instead we _numerically integrate_
+$$
+\begin{align*}
+z(t) &\approx \text{ODESolver}(f, t, z_0)
+\end{align*}
+$$
+For a given ODE solver and $f$, this can be viewed as the forward pass of a function, due to uniqueness
+$$
+z(t) = F(t, z_0)
+$$
+If $f$ has learnable parameters $\theta$, then $F$ is learnable, and we write $f_\theta$ and $F_\theta$.
+We can then think of $F_\theta$ as a function approximator (useful for classification, generative modelling)
+:::
+
+## Implementing an IVP as a forward pass
+::: r-fit-text
+We can compute the forward pass via numerical integration, assuming $T$ Euler steps, such that $t_T = t$ and $t_{i+1} = t_i + t / T$:
+$$
+\begin{align}
+z(0) &= z_0 \\
+z(t_{i+1}) &= z(t_i) + f(t_i, z(t_i)) \Delta t \\
+F_\theta(t_{N}, z_0) &= z(t)
+\end{align}
+$$
+Everything is differentiable, so we can compute gradients with respect to $t$, $z_0$, and $\theta$!
+:::
+
+```{python}
+import torch
+
+def F(y0, f, num_steps=1000, tau=1):
+    ts = torch.linspace(0, tau, num_steps + 1)
+    dt = tau / num_steps
+    z = z0
+    for t in ts:
+        z = z + f(t, z) * dt
+    return z 
+```
+
+## Connection to residual layers
+::: r-fit-text
+The forward pass computation graph depends on:
+
+- The choice of the numerical integrator
+- Integrator parameters (like step size and duration)
+- The dynamics/vector field $f$, which can be a neural network $f_\theta$
+
+With Euler's method, each step is a "residual layer" computation:
+$$z(t_{i+1}) = z(t_i) + f(t_i, z(t_i)) \Delta t$$
+where $f_\theta(t_i, z(t_i)) \Delta t$ is the $i$-th residual block output.
+:::
+
+
+## Connection to SSMs
+::: r-fit-text
+An Euler discretized differential equation is the hidden state update of a state space model (SSM).
+A linear ODE with controls $u$
+$$
+\begin{align}
+\frac{\dd x}{\dd t}(t) &= Ax(t) + Bu(t) \\
+\end{align}
+$$
+becomes
+$$
+\begin{align}
+x_{i+1} &= x_{i} + \Delta t Ax_i + \Delta t B x_i \\\ 
+ &=  \tilde Ax_i + \tilde Bu_i
+\end{align}
+$$
+where we define $x_i = x(t_i)$, $u_i = u(t_i)$, $y_i = y(t_i)$, and
+$\tilde A = (I + \Delta t A)$, $\tilde B = \Delta t B$.
+:::
+
+## More general numerical integration scheme 
+::: r-fit-text
+More generally, 
+$$
+\begin{align*}
+z_{i+1} &= g(f_\theta, z_{i}, t_i)\\
+t_{i+1} &= t_i + h_i
+\end{align*}
+$$
+where $h_i$ may be an adaptively chosen step size. Examples of more advanced numerical integration schemes include:
+
+- Huen's method
+- Runge-Kutta methods
+- Leapfrog method
+
+```{python}
+from torchdiffeq import odeint as odeint
+
+
+class ODEModel(torch.nn.Module):
+    def __init__(self, dynamics):
+        super().__init__()
+        self.dynamics = dynamics
+        self.ode_solver = lambda f, t, z0: odeint(f, z0, t, method="euler")
+
+    def forward(self, t, z0):
+        assert t.ndim == 1 
+        assert z0.ndim == 2
+        zt = self.ode_solver(self.dynamics, t, z0)
+        return zt
+```
+:::
+
+## Visualizing numerically integrating our 2D system
+
+Let's do some numerical integration. We'll integrate `LinearDynamics` with 5 random initial conditions for 10 Euler steps.
+
+```{python}
+#| output-location: slide
+t0, t1 = 0., 10.
+num_timesteps = 10
+num_trajs = 5
+state_dim = 2
+
+z0 = torch.randn(num_trajs, state_dim, device=device)
+t = torch.linspace(t0, t1, num_timesteps, device=device)
+
+linear_ode = ODEModel(LinearDynamics()).to(device)
+
+with torch.no_grad():
+    linear_ode_zt = linear_ode(t, z0)
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+def plot_traj(zt, ax=None):
+    assert zt.ndim == 3 # `num_timesteps x num_trajs x state_dim`
+    if ax is None:
+        fig, ax = plt.subplots()
+    if torch.is_tensor(zt):
+        zt = zt.cpu()
+    zt_z, zt_y = zt[:, :, 0], zt[:, :, 1]
+    num_traj = zt.shape[1]
+    ax.scatter(zt_z, zt_y, color="k");
+    ax.plot(zt_z, zt_y, "y", alpha=0.25);
+    ax.scatter(zt_z[0, :], zt_y[0, :], color="r", label=r"$z(0)$"); # initial conditions
+    ax.scatter(zt_z[-1, :], zt_y[-1, :], color="b", label=r"$z(1)$"); # final conditions
+    ax.set_title(f"Trajectories from {num_traj} initial conditions");
+    ax.axis("equal")
+    ax.legend()
+    return ax
+
+_ = plot_traj(linear_ode_zt)
+```
+
+## How to fit the parameters of the dynamics? 
+::: r-fit-text
+If $f_\theta$ is a parametric function, how do we fit the parameters $\theta$?
+
+You need:
+
+1. A dataset
+2. A loss function
+3. A way to compute gradients
+:::
+
+## Ingredient: a dataset
+
+::: r-fit-text
+Let's make a dataset of trajectories with different initial conditions. Each trajectory of length $T$ looks like $z (t_0), z (t_1), \ldots, z(t_{T-1})$.
+```{python}
+#| output-location: slide
+num_timesteps = 100
+num_trajs = 400
+state_dim = 2
+
+z0 = torch.randn(num_trajs, state_dim, device=device)
+t = torch.linspace(0, 10, num_timesteps, device=device)
+
+with torch.no_grad():
+    zt_true = linear_ode(t, z0)
+
+def get_batch(batch_size=40, time_window=5):
+    # Create batches by choosing a random segment along a random trajectory in zt_true
+    t0 = torch.from_numpy(np.random.choice(np.arange(num_timesteps - time_window + 1, dtype=np.int64), batch_size, replace=True))
+    trajs = torch.from_numpy(np.random.choice(np.arange(num_trajs, dtype=np.int64), batch_size, replace=False))
+    batch_z0 = zt_true[t0, trajs]  # (M, D)
+    batch_t = t[:time_window]  # (T)
+    batch_zt_true = torch.stack([zt_true[t0 + dt, trajs] for dt in range(time_window)], dim=0)  # (T, M, D)
+    return batch_z0, batch_t, batch_zt_true
+```
+:::
+
+## Ingredient: a loss function
+
+::: r-fit-text
+We can use any differentiable scalar loss function $L$ that we want, based on the task
+
+Here we use the MSE:
+$$
+\begin{align*}
+L(z, \hat{z}) = \frac{1}{N} \sum_{i=0}^{N-1} \| z(t_i) - \hat{z}(t_i)\|_2^2
+\end{align*}
+$$
+where $z$ is the ground truth trajectory and $\hat z$ is the predicted trajectory under the dynamics defined by $f_\theta$.
+:::
+
+## Ingredient: a way to compute gradients
+:::r-fit-text
+
+Two main ways to compute gradients:
+
+1. Autodiff through the solver (discretize then optimize)
+    - Pros: easy to implement, fast, accurate gradients
+    - Cons: memory intensive when taking many steps 
+2. Solve the continuous adjoint (optimize then discretize)
+    - Pros: memory efficient, solved in parallel with forward pass
+    - Cons: slow, inaccurate gradients
+
+We will discuss 2 later.
+:::
+
+## Let's train our own neural ODE
+
+```{python}
+import time
+
+neural_ode = ODEModel(NeuralDynamics(state_dim)).to(device)
+
+num_iters = 100
+optimizer = torch.optim.Adam(neural_ode.parameters(), lr=1e-2)
+
+start = time.time()
+for i in range(0, num_iters + 1):
+    batch_z0, batch_t, batch_zt_true = get_batch()
+    batch_zt_pred = neural_ode(batch_t, batch_z0)
+
+    optimizer.zero_grad()
+    loss = (batch_zt_true - batch_zt_pred).pow(2).sum(-1).mean(-1).mean(-1)
+    if i % 25 == 0:
+        print(f"Iter {i}/{num_iters} | Loss: {loss.item()}")
+    if i > 0:
+        # 0th iteration is just to show initial loss, so we skip gradient step
+        loss.backward()
+        optimizer.step()
+        iter_time = (time.time() - start) / i
+print(f"That took {iter_time * 1000:.2f} ms!")
+```
+
+## How did our neural ODE do?
+
+```{python}
+#| output-location: slide
+with torch.no_grad():
+    linear_zt = linear_ode(t, z0)
+    pred_zt = neural_ode(t, z0)
+
+fig, axes = plt.subplots(ncols=2, figsize=(12, 6), sharey=True)
+    
+_ = plot_traj(linear_zt, axes[0]);
+_ = axes[0].set_title("True trajectorys from linear dynamical system");
+_ = axes[0].set(xlim=(-3, 3))
+_ = plot_traj(pred_zt, axes[1]);
+_ = axes[1].set_title("Predicted trajectorys from neural ODE");
+_ = axes[1].set(xlim=(-3, 3))
+```
+
+## Practical tips to training a neural ODE
+::: r-fit-text
+
+1. If your GPU has enough memory, autodiff through the solver
+2. Use smooth activations like GELU
+3. Initialize $f_\theta$ to $0$.
+4. Do not use batch norm/layer norm/etc. in $f_\theta$
+5. Rescale inputs to $f_\theta$ to be close to 0 and outputs to be close to the ground truth
+:::
+
+## The continuous adjoint method
+
+::: r-fit-text
+Let $L = L(z(\tau))$.
+Let $a(t) = \frac{\dd L}{\dd z(t)}$ be the adjoint variable, where $a: [0, \tau] \to \reals^D$.
+Then keeping only order $\epsilon$ terms,
+$$
+\begin{align}
+a(t+\epsilon)^\top - a(t)^\top &= a(t+\epsilon)^\top - \frac{\dd L}{\dd z(t)} \\
+&= a(t+\epsilon)^\top - \frac{\dd L}{\dd z(t+\epsilon)} \frac{\dd z(t+\epsilon)}{\dd z(t)} \\
+&= a(t+\epsilon)^\top - a(t+\epsilon)^\top \frac{\dd}{\dd z(t)}[z(t) + \epsilon f_\theta(t, z(t)) + \ldots] \\ 
+&= a(t+\epsilon)^\top - a(t+\epsilon)^\top [I + \epsilon \partial_z f_\theta(t, z(t))] + \ldots \\ 
+&= -a(t)^\top \partial_z f_\theta(t, z(t)) \epsilon + \ldots 
+\end{align}
+$$
+Hence $\frac{\dd a}{\dd t}(t)^\top = -a(t)^\top \partial_2 f_\theta(t, z(t))$, with "final condition" $a(\tau) = \frac{\dd L}{\dd z(\tau)}$.
+:::
+
+## Gradients from the continuous adjoint method
+::: r-fit-text
+We augment the states to get a differential equation over $[z^\top, \theta^\top]^\top$, with dynamics $[f_\theta^\top, 0^\top]^\top$.
+Then the adjoint variable is $a^\top = [a_z^\top, a_\theta^\top]$, and $\frac{\dd L}{\dd \theta} = a_\theta(0)^\top$.
+Plugging into prevoius results, we get an FVP we solve to get $a_\theta(0) = \frac{\dd L}{\dd \theta}$: 
+$$
+\begin{align}
+a_z(\tau) &= \frac{\dd L}{\dd z(\tau)} \quad \frac{\dd a_z}{\dd t}(t)^\top = -a_z(t)^\top \partial_z f_\theta (t, z(t)) \\
+a_\theta(\tau) &= 0 \quad \frac{\dd a_\theta}{\dd t}(t)^\top = -a_z(t)^\top \partial_\theta f_\theta (t, z(t))
+\end{align}
+$$
+:::
+
+## Case-study: hybrid differential equations 
+::: r-fit-text
+Suppose:
+
+- we know a mechanistic model $m(t, z(t))$ of a dynamical system.
+- but $g$ does not describe all the dynamics of the system: $f_{\text{true}}(t, z(t)) = m(t, z(t)) + f_{\text{unknown}}(t, z(t))$.
+
+Idea: we can use a neural network $f_\theta$ to approximate $f_{\text{unknown}}$. History goes back to the 90s!
+
+More generally, we can also add additional variables $w$ to account for unmodelled variables:
+$$
+\begin{align}
+\frac{\dd z}{\dd t} &= m(t, z(t)) + f_\theta(t, z(t), w(t)) \\
+\frac{\dd w}{\dd t} &= g_\psi(t, z(t), w(t))
+\end{align}
+$$
+:::
+
+## Case-study: density estimation with continuous normalizing flow
+::: r-fit-text
+Given:
+
+- a base random variable $\Ubf$ with density $p_{\Ubf}$
+- an invertible parameterized function $F_\theta: U \to X$,
+
+We can construct a new random variable $\Xbf=F_\theta(\Ubf)$ with
+
+- a density $p_{\theta}(x) = p_\Ubf(F_\theta^{-1}(x)) |\det{\partial_x F_\theta^{-1}(x)}|$.
+- a way to sample from $p_\theta$ by sampling $\Ubf$ and applying $F_\theta$.
+
+This is called a normalizing flow $p_\Xbf$, trainable via maximum likelihood.
+
+Idea: we can use our IVP function $F_\theta$ with a neural ODE $f_\theta$. 
+:::
+
+## More on continuous normalizing flow
+::: r-fit-text
+Given a data point $x\in \reals^D$, define final condition $z(\tau) = x$. Usually set $\tau=1$.
+
+Note that $\log p_\theta(x) = \log p(z(1)) = \log p_\theta(F^{-1}_\theta(1, x)) - \int_1^0 \frac{\dd \log p_\theta(F^{-1}(t, x))}{\dd t} \dd t$.
+
+Can show that
+$$
+\begin{align*}
+\frac{\dd \log p_\theta(z(t))}{\dd t} &= -\text{tr} \frac{\dd f_\theta}{\dd z(t)}
+\end{align*}
+$$
+which is just the trace of a Jacobian, cheaply computable by Hutchinson's trace estimator
+:::
+
+## Case-study: latent variable modeling for time series
+
+::: r-fit-text
+By thinking of $F_\theta$ as a function approximator, we can build new types of models that operate in continuous time
+
+For example:
+
+- Assume there is a latent continuous time system that is deterministic given an initial condition
+- Assume a link function that maps to the observation space
+
+This results in the forward generative model:
+$$
+\begin{align}
+z(0) &\sim p(z_0) \\
+z(t) &= z(0) + \int_0^t f_\theta(t, z(s)) \dd s = F_\theta(z(0), t) \\
+x(t) &\sim p_{\theta_x}(x(t) | z(t))
+\end{align}
+$$
+
+Idea: combine this with ADVI/VAE framework to do approximate posterior inference, using an inference/encoder network $q_\phi$, e.g. an RNN or another ODE.
+:::
